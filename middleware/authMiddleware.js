@@ -3,31 +3,32 @@ import User from '../models/userModel.js';
 
 //protect routes
 const protect = async (req, res, next) => {
-    let token = req.cookies?.jwt; // Read from cookies
-    console.log("Token from request:", token); // Debugging
-
-    if (!token) {
-        return res.status(401).json({ message: "Not authorized, no token" });
-    }
-
     try {
+        let token = req.cookies?.jwt || req.headers.authorization?.split(" ")[1];
+
+        if (!token) {
+            console.log("No token found in cookies or headers"); // Debugging
+            return res.status(401).json({ message: "Not authorized, no token" });
+        }
+
+        console.log("Token received:", token); // Debugging
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Decoded token:", decoded); // Debugging
 
         req.user = await User.findById(decoded.userId).select("-password");
-        console.log(req.user);
 
         if (!req.user) {
-            return res.status(404).json({ message: "User not found" });
+            console.log("User not found in DB"); // Debugging
+            return res.status(401).json({ message: "Not authorized, user not found" });
         }
 
         next();
     } catch (error) {
-        console.error("Token verification error:", error);
+        console.error("JWT verification error:", error.message);
         res.status(401).json({ message: "Not authorized, invalid token" });
     }
 };
-
 //admin middleware
 const admin = (req, res, next) => {
     if (req.user && req.user.isAdmin) {
