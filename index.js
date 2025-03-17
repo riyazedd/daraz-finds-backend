@@ -17,16 +17,19 @@ connectDB();
 
 const app = express();
 
+// Keep CORS as it is
 app.use(cors({
     origin: process.env.FRONTEND_URL, // Explicitly allow your frontend origin
     credentials: true // Allow cookies to be sent
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//cookie parser middleware
+// Cookie parser middleware
 app.use(cookieParser());
 
+// API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/users', userRoutes);
@@ -43,7 +46,7 @@ app.get('/scrape-image', async (req, res) => {
         // Fetch the product page
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
-        // console.log(response.data);
+
         // Find the image URL (update the selector based on Daraz's structure)
         const imageUrl = $('img.pdp-mod-common-image').attr('src'); // Replace with the correct selector
 
@@ -58,21 +61,20 @@ app.get('/scrape-image', async (req, res) => {
     }
 });
 
-if (process.env.NODE_ENV === 'production') {
-    app.get('/', (req, res) => {
-        res.send('Backend is running in production');
-    });
-} else {
-    app.get('/', (req, res) => {
-        res.send('API is running in development mode');
-    });
-}
+// Serve frontend static files (Ensure correct path)
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, "/frontend/dist"))); // Change "dist" to "build" if using CRA
 
+// Catch-all route to serve React frontend for non-API routes
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "/frontend/dist", "index.html")); 
+});
 
+// Start the server
 app.listen(port, (err) => {
     if (err) {
-        console.error('Error starting server:' + err.message);
+        console.error('Error starting server:', err.message);
     } else {
-        console.log('Server running on port:' + port);
+        console.log(`Server running on port: ${port}`);
     }
 });
