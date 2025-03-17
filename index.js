@@ -5,8 +5,6 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 
 import cookieParser from 'cookie-parser';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -18,9 +16,6 @@ connectDB();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Fix for "__dirname is not defined in ES module scope"
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // CORS Middleware (Keeps Your Existing CORS Config)
 app.use(cors({
@@ -61,13 +56,7 @@ app.get('/scrape-image', async (req, res) => {
     }
 });
 
-// Serve frontend static files (Ensure correct path)
-app.use(express.static(path.join(__dirname, "/frontend/dist"))); // Change to "/frontend/build" if using CRA
 
-// Catch-all route to serve React frontend for non-API routes
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "/frontend/dist", "index.html"));
-});
 
 // Start the server
 app.listen(port, () => {
