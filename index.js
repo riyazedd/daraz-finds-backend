@@ -21,7 +21,6 @@ app.use(cors({
     origin: process.env.FRONTEND_URL, // Explicitly allow your frontend origin
     credentials: true // Allow cookies to be sent
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
