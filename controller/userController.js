@@ -1,6 +1,6 @@
-const User = require("../models/userModel.js");
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs'); // Import bcrypt for password hashing
+import User from "../models/userModel.js";
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs'; // Import bcrypt for password hashing
 
 // Get logged-in user profile
 const getProfile = async (req, res) => {
@@ -93,4 +93,4 @@ const updateProfile = async (req, res) => {
     }
 };
 
-module.exports = { getProfile, authUser, logoutUser, updateProfile };
+export { getProfile, authUser, logoutUser, updateProfile };

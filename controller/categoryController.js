@@ -1,4 +1,4 @@
-const Category = require('../models/categoryModel.js');
+import Category from '../models/categoryModel.js';
 
 const getCategory = async (req, res) => {
     const category = await Category.find({});
@@ -49,4 +49,4 @@ const deleteCategory = async (req, res) => {
     }
 };
 
-module.exports = { getCategory, getCategoryById, addCategory, updateCategory, deleteCategory };
+export { getCategory, getCategoryById, addCategory, updateCategory, deleteCategory };
