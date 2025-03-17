@@ -33,11 +33,11 @@
         if (user && (await user.matchPassword(password))) {
             const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "2d" });
     
-            res.cookie("jwt", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV !== "development",
+            res.cookie("jwt", token, { 
+                httpOnly: true, 
+                secure: process.env.NODE_ENV !== "development", 
                 sameSite: "strict",
-                maxAge: 2 * 24 * 60 * 60 * 1000,
+                maxAge: 2 * 24 * 60 * 60 * 1000 
             });
     
             res.json({
@@ -45,7 +45,7 @@
                 username: user.username,
                 email: user.email,
                 isAdmin: user.isAdmin,
-                token,
+                token, // Send token to frontend
             });
         } else {
             res.status(401).json({ message: "Invalid email or password" });
@@ -93,5 +93,5 @@
             console.error("Profile update error:", err);
             res.status(500).json({ message: "Internal Server Error" });
         }
-    };
+    };  
     export { getProfile, authUser, logoutUser, updateProfile };
