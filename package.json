@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "websites where you can find daraz products",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "data:import": "node backend/seeder.js",
