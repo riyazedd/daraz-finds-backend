@@ -68,10 +68,5 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-app.listen(port, (err) => {
-    if (err) {
-        console.error('Error starting server:' + err.message);
-    } else {
-        console.log('Server running on port:' + port);
-    }
-});
+// Export the app for Vercel
+module.exports = app;
