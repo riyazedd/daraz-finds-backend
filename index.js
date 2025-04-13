@@ -1,13 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import connectDB from './config/db.js';
-
-import axios from 'axios';
-import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { executablePath } from 'puppeteer'; // Use Puppeteer's executable path for Render deployment
+import axios from 'axios';
+import cheerio from 'cheerio';
+import cookieParser from 'cookie-parser';
+import connectDB from './config/db.js'; // Adjust according to your project structure
 
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -19,11 +19,11 @@ connectDB();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true
+    origin: process.env.FRONTEND_URL, // Make sure this is set in .env
+    credentials: true,
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -33,7 +33,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/users', userRoutes);
 
-// Scrape product image using Puppeteer with stealth plugin
+// Puppeteer setup with Stealth plugin
 puppeteer.use(StealthPlugin());
 
 app.get('/scrape-image', async (req, res) => {
@@ -43,21 +43,27 @@ app.get('/scrape-image', async (req, res) => {
             return res.status(400).json({ error: 'URL parameter is required' });
         }
 
+        // Decode and clean up the URL
         const decodedUrl = decodeURIComponent(url);
+
+        // Launch Puppeteer with custom executable path for Render
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            executablePath: executablePath(), // Use the local Chromium path installed by Puppeteer
         });
 
         const page = await browser.newPage();
 
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+        // Set User-Agent to mimic a real browser
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
         await page.setViewport({ width: 1366, height: 768 });
 
-        await page.goto(decodedUrl, { waitUntil: 'networkidle2', timeout: 100000 });
+        // Navigate to the product page
+        await page.goto(decodedUrl, { waitUntil: 'networkidle2', timeout: 30000 });
 
-        // Try to get main product image (adjust selector based on page structure)
-        await page.waitForSelector('img.pdp-mod-common-image', { timeout: 100000 });
+        // Wait for the product image to load and scrape its URL
+        await page.waitForSelector('img.pdp-mod-common-image', { timeout: 10000 });
 
         const imageUrl = await page.$eval('img.pdp-mod-common-image', img => img.src);
 
@@ -71,12 +77,13 @@ app.get('/scrape-image', async (req, res) => {
 
     } catch (error) {
         console.error('Puppeteer scrape error:', error.message);
-        res.status(500).json({ 
-            error: error.message.includes('timeout') ? 'Page took too long to load or CAPTCHA appeared' : 'Failed to scrape image' 
+        res.status(500).json({
+            error: error.message.includes('timeout') ? 'Page timeout or CAPTCHA detected' : error.message,
         });
     }
 });
 
+// Start the server
 app.listen(port, () => {
     console.log(`Server running on port: ${port}`);
 });

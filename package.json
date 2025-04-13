@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
+    "postinstall": "puppeteer install",
     "data:import": "node seeder.js",
     "data:destroy": "node backend/seeder.js -d"
   },
