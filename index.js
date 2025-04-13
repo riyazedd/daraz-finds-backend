@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { executablePath } from 'puppeteer'; // Use Puppeteer's executable path for Render deployment
+import { executablePath } from 'puppeteer'; // Automatically gets the correct executable path
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js'; // Adjust according to your project structure
 
@@ -48,7 +48,7 @@ app.get('/scrape-image', async (req, res) => {
         const browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            executablePath: executablePath(), // Use the local Chromium path installed by Puppeteer
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || executablePath(), // Use the environment variable for executable path or fallback
         });
 
         const page = await browser.newPage();
