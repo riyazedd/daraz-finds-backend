@@ -4,8 +4,6 @@ import dotenv from 'dotenv';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { executablePath } from 'puppeteer'; // Use Puppeteer's executable path for Render deployment
-import axios from 'axios';
-import cheerio from 'cheerio';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js'; // Adjust according to your project structure
 
