@@ -5,6 +5,10 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    image: {
+        type: String,
+        required: true
+    },
     category: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -13,6 +17,18 @@ const productSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+productSchema.methods.toJSON = function () {
+    var obj = this.toObject();
+    if (obj.image) {
+        obj.image = process.env.PUBLIC_URL+ "/products/" + obj.image;
+    } else {
+        obj.image = process.env.PUBLIC_URL + "/icons/notFound.png"
+    }
+
+    return obj;
+}
+
 
 const Product = mongoose.model("Product", productSchema);
 

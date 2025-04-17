@@ -1,9 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { executablePath } from 'puppeteer'; // Automatically gets the correct executable path
 import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js'; // Adjust according to your project structure
 
@@ -25,61 +22,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(express.static('public'));
 
 // API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/users', userRoutes);
 
-// Puppeteer setup with Stealth plugin
-puppeteer.use(StealthPlugin());
-
-app.get('/scrape-image', async (req, res) => {
-    try {
-        const { url } = req.query;
-        if (!url) {
-            return res.status(400).json({ error: 'URL parameter is required' });
-        }
-
-        // Decode and clean up the URL
-        const decodedUrl = decodeURIComponent(url);
-
-        // Launch Puppeteer with custom executable path for Render
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || executablePath(), // Use the environment variable for executable path or fallback
-        });
-
-        const page = await browser.newPage();
-
-        // Set User-Agent to mimic a real browser
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
-        await page.setViewport({ width: 1366, height: 768 });
-
-        // Navigate to the product page
-        await page.goto(decodedUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-
-        // Wait for the product image to load and scrape its URL
-        await page.waitForSelector('img.pdp-mod-common-image', { timeout: 10000 });
-
-        const imageUrl = await page.$eval('img.pdp-mod-common-image', img => img.src);
-
-        await browser.close();
-
-        if (!imageUrl) {
-            return res.status(404).json({ error: 'Image not found' });
-        }
-
-        res.json({ imageUrl });
-
-    } catch (error) {
-        console.error('Puppeteer scrape error:', error.message);
-        res.status(500).json({
-            error: error.message.includes('timeout') ? 'Page timeout or CAPTCHA detected' : error.message,
-        });
-    }
-});
 
 // Start the server
 app.listen(port, () => {

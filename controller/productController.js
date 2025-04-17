@@ -23,17 +23,23 @@ const addProduct = async (req, res) => {
     try {
         let products = req.body;
 
-        console.log("Incoming product data:", products); // Debugging log
-
-        if (!products || (Array.isArray(products) && products.length === 0)) {
-            return res.status(400).json({ success: false, message: "No product data provided" });
-        }
-
         if (!Array.isArray(products)) {
             products = [products];
         }
 
-        const createdProducts = await Product.insertMany(products);
+        const createdProducts = [];
+
+        for (let productData of products) {
+            let image = "";
+
+            // Handle image if file is uploaded
+            if (req.file) {
+                image = req.file.filename;
+            }
+
+            const newProduct = await Product.create({ ...productData, image });
+            createdProducts.push(newProduct);
+        }
 
         res.status(201).json({ success: true, products: createdProducts });
     } catch (err) {
@@ -42,17 +48,31 @@ const addProduct = async (req, res) => {
     }
 };
 
+
 const updateProduct = async (req, res) => {
     try {
         const id = req.params.id;
+        const product = await Product.findById(id);
 
-        await Product.findByIdAndUpdate(id, req.body);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        let image = product.image;
+
+        if (req.file) {
+            image = req.file.filename;
+        }
+
+        await Product.findByIdAndUpdate(id, { ...req.body, image });
 
         res.status(200).json({ success: true });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("Error updating product:", err.message);
+        res.status(500).json({ success: false, message: err.message });
     }
 };
+
 
 const deleteProduct = async (req, res) => {
     try {
