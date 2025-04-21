@@ -1,25 +1,22 @@
 import express from 'express';
-const router = express.Router();
-import UploadMiddleware from '../middleware/UploadMiddleware.js';
-
+import multer from 'multer';
+import { storage } from '../config/cloudinary.js';
 import {
   getProducts,
   getProductById,
   addProduct,
   updateProduct,
-  deleteProduct,
+  deleteProduct
 } from '../controller/productController.js';
 
-const uploader = new UploadMiddleware();
+const router = express.Router();
+const upload = multer({ storage });
 
-// ✅ Apply upload middleware for image upload
-router.route('/')
-  .get(getProducts)
-  .post(uploader.upload("products").single("image"), addProduct); // ← HERE
-
-router.route('/:id')
-  .get(getProductById)
-  .put(uploader.upload("products").single("image"), updateProduct)
-  .delete(deleteProduct);
+// Apply `upload.single('image')` middleware for routes accepting images
+router.post('/', upload.single('image'), addProduct);
+router.put('/:id', upload.single('image'), updateProduct);
+router.get('/', getProducts);
+router.get('/:id', getProductById);
+router.delete('/:id', deleteProduct);
 
 export default router;

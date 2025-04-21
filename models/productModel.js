@@ -21,13 +21,15 @@ const productSchema = new mongoose.Schema({
 productSchema.methods.toJSON = function () {
     var obj = this.toObject();
     if (obj.image) {
-        obj.image = process.env.PUBLIC_URL+ "/products/" + obj.image;
+        // Don't prefix the image with `/products/` since it's already a full URL
+        // Just return the image as it is
+        obj.image = obj.image;
     } else {
-        obj.image = process.env.PUBLIC_URL + "/icons/notFound.png"
+        obj.image = process.env.PUBLIC_URL + "/icons/notFound.png";  // This is fine if image is missing
     }
 
     return obj;
-}
+};
 
 
 const Product = mongoose.model("Product", productSchema);
